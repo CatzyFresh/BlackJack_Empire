@@ -13,9 +13,9 @@ public class BetManager : MonoBehaviour
             return;
         }
 
-        CurrentBet = amount;
+        CurrentBet += amount;
         PlayerBalance -= amount;
-        Debug.Log($"Player placed a bet of {amount}. Remaining balance: {PlayerBalance}");
+        Debug.Log($"Player placed a bet of ${amount}. Current bet: ${CurrentBet}. Remaining balance: ${PlayerBalance}");
     }
 
     public void ConfirmBet()
@@ -39,12 +39,12 @@ public class BetManager : MonoBehaviour
     {
         int winnings = Mathf.RoundToInt(CurrentBet * multiplier);
         PlayerBalance += winnings;
-        Debug.Log($"Player wins {winnings}! New balance: {PlayerBalance}");
+        Debug.Log($"Player wins ${winnings}! New balance: ${PlayerBalance}");
     }
 
     public void LoseBet()
     {
-        Debug.Log($"Player lost the bet of {CurrentBet}. Remaining balance: {PlayerBalance}");
+        Debug.Log($"Player lost the bet of ${CurrentBet}. Remaining balance: ${PlayerBalance}");
     }
 
     public void DeductBet(int amount)

@@ -40,6 +40,7 @@ public class GameManager : MonoBehaviour
     private void StartBettingPhase()
     {
         Debug.Log("Starting betting phase...");
+        uiManager.ShowBettingUI(true);
         uiManager.UpdateBettingUI(0, betManager.PlayerBalance);
     }
 
@@ -47,7 +48,7 @@ public class GameManager : MonoBehaviour
     {
         Debug.Log($"Placing bet with chip value: {chipValue}");
         betManager.PlaceBet(chipValue);
-        uiManager.UpdateBettingUI(chipValue, betManager.PlayerBalance);
+        uiManager.UpdateBettingUI(betManager.CurrentBet, betManager.PlayerBalance);
     }
 
     public void OnConfirmBet()
@@ -70,6 +71,7 @@ public class GameManager : MonoBehaviour
         //betManager.ResetBet();
 
         //SimulatePlayerBet();
+        uiManager.ShowBettingUI(false);
 
         playerController.ResetHand();
         dealerController.ResetHand();
@@ -149,7 +151,8 @@ public class GameManager : MonoBehaviour
     {
         Debug.Log("Round Ended.");
         uiManager.EnableActionButtons(false);
-        ResetRound();
+        uiManager.UpdateBettingUI(0, betManager.PlayerBalance);
+       // ResetRound();
     }
 
     private void ResetRound()
@@ -158,6 +161,7 @@ public class GameManager : MonoBehaviour
         deckManager.ResetDeck();
         betManager.ResetBet();
         uiManager.ClearHands();
+        StartBettingPhase();
     }
 
 

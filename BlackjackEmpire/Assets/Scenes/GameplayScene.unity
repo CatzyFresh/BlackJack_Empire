@@ -129,6 +129,7 @@ GameObject:
   m_Component:
   - component: {fileID: 5167209}
   - component: {fileID: 5167210}
+  - component: {fileID: 5167211}
   m_Layer: 5
   m_Name: Player Hand Area
   m_TagString: Untagged
@@ -154,8 +155,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: -250, y: 0}
-  m_SizeDelta: {x: 100, y: 100}
+  m_AnchoredPosition: {x: 0, y: 0}
+  m_SizeDelta: {x: 0, y: 100}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &5167210
 MonoBehaviour:
@@ -183,6 +184,20 @@ MonoBehaviour:
   m_ChildScaleWidth: 0
   m_ChildScaleHeight: 0
   m_ReverseArrangement: 0
+--- !u!114 &5167211
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5167208}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3245ec927659c4140ac4f8d17403cc18, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_HorizontalFit: 2
+  m_VerticalFit: 0
 --- !u!1 &82475519
 GameObject:
   m_ObjectHideFlags: 0
@@ -245,7 +260,9 @@ MonoBehaviour:
   fiftyDollarsChipButton: {fileID: 284432180}
   hundredDollarsChipButton: {fileID: 2056131893}
   fivehundredDollarsChipButton: {fileID: 1723604787}
+  bettingPanel: {fileID: 1567775023}
   cardDatabase: {fileID: 11400000, guid: baabfefa0af46f045925b0e8d5b01d80, type: 2}
+  cardBackSprite: {fileID: 976425113076782989, guid: e433c5cd54ff05641af5f9559c6d991b, type: 3}
 --- !u!114 &82475522
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -486,7 +503,6 @@ RectTransform:
   - {fileID: 1384375593}
   - {fileID: 5167209}
   - {fileID: 316343193}
-  - {fileID: 845657741}
   - {fileID: 140004535}
   - {fileID: 1567775024}
   - {fileID: 1776366600}
@@ -1802,17 +1818,17 @@ RectTransform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 845657740}
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 1305637303}
-  m_Father: {fileID: 123419514}
+  m_Father: {fileID: 1567775024}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0}
   m_AnchorMax: {x: 0.5, y: 0}
-  m_AnchoredPosition: {x: 0, y: 377}
+  m_AnchoredPosition: {x: 0, y: 294}
   m_SizeDelta: {x: 200, y: 100}
   m_Pivot: {x: 0.5, y: 0}
 --- !u!114 &845657742
@@ -2867,6 +2883,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1384375593}
   - component: {fileID: 1384375594}
+  - component: {fileID: 1384375595}
   m_Layer: 5
   m_Name: Dealer Hand Area
   m_TagString: Untagged
@@ -2892,8 +2909,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: -250, y: 400}
-  m_SizeDelta: {x: 100, y: 100}
+  m_AnchoredPosition: {x: 0, y: 400}
+  m_SizeDelta: {x: 0, y: 100}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1384375594
 MonoBehaviour:
@@ -2921,6 +2938,20 @@ MonoBehaviour:
   m_ChildScaleWidth: 0
   m_ChildScaleHeight: 0
   m_ReverseArrangement: 0
+--- !u!114 &1384375595
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1384375592}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3245ec927659c4140ac4f8d17403cc18, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_HorizontalFit: 2
+  m_VerticalFit: 0
 --- !u!1 &1567775023
 GameObject:
   m_ObjectHideFlags: 0
@@ -2933,7 +2964,7 @@ GameObject:
   - component: {fileID: 1567775026}
   - component: {fileID: 1567775025}
   m_Layer: 5
-  m_Name: Panel
+  m_Name: Betting Panel
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -2952,6 +2983,7 @@ RectTransform:
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 657221369}
+  - {fileID: 845657741}
   m_Father: {fileID: 123419514}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0}
@@ -3266,7 +3298,7 @@ GameObject:
   - component: {fileID: 1776366602}
   - component: {fileID: 1776366601}
   m_Layer: 5
-  m_Name: Panel
+  m_Name: Currency Panel
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0

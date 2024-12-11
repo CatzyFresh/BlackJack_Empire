@@ -24,10 +24,14 @@ public class UIManager : MonoBehaviour
     [SerializeField] private Button fiftyDollarsChipButton;
     [SerializeField] private Button hundredDollarsChipButton;
     [SerializeField] private Button fivehundredDollarsChipButton;
+    [SerializeField] private GameObject bettingPanel;
 
 
     [Header("Card Database")]
     [SerializeField] private CardDatabase cardDatabase; // Reference to the card database
+
+    [Header("Card Back")]
+    [SerializeField] private Sprite cardBackSprite;
 
     public void InitializeUI()
     {
@@ -85,14 +89,22 @@ public class UIManager : MonoBehaviour
 
     private Sprite GetCardBackSprite()
     {
-        // Replace with logic to fetch the card back sprite
-        return Resources.Load<Sprite>("Cards/CardBack");
+        return cardBackSprite; // Use the preassigned sprite
     }
+
 
     public void EnableActionButtons(bool enable)
     {
         hitButton.interactable = enable;
         standButton.interactable = enable;
+        hitButton.gameObject.SetActive(enable);
+        standButton.gameObject.SetActive(enable);
+    }
+
+    public void ShowBettingUI(bool setActive)
+    {
+        bettingPanel.SetActive(setActive);
+        chipsArea.gameObject.SetActive(setActive);
     }
 
     public void ClearHands()
