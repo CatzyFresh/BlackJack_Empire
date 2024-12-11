@@ -1,12 +1,13 @@
+// PlayerController Class
 using System.Collections.Generic;
 using UnityEngine;
 
 public class PlayerController : MonoBehaviour
 {
-    public List<Card> Hand { get; private set; } = new List<Card>();
+    public List<CardData> Hand { get; private set; } = new List<CardData>();
     public int BetAmount { get; set; }
 
-    public void AddCardToHand(Card card)
+    public void AddCardToHand(CardData card)
     {
         Hand.Add(card);
     }
@@ -16,19 +17,20 @@ public class PlayerController : MonoBehaviour
         int value = 0;
         int aceCount = 0;
 
-        foreach (Card card in Hand)
+        foreach (CardData card in Hand)
         {
-            if (card.Value > 10) value += 10; // Face cards
-            else if (card.Value == 1) aceCount++; // Ace
-            else value += card.Value;
-
-            while (aceCount > 0)
-            {
-                if (value + 11 <= 21) value += 11;
-                else value += 1;
-                aceCount--;
-            }
+            if (card.value > 10) value += 10; // Face cards
+            else if (card.value == 1) aceCount++; // Ace
+            else value += card.value;
         }
+
+        while (aceCount > 0)
+        {
+            if (value + 11 <= 21) value += 11;
+            else value += 1;
+            aceCount--;
+        }
+
         return value;
     }
 

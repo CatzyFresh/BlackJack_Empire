@@ -240,7 +240,7 @@ TextureImporter:
       edges: []
       weights: []
     - serializedVersion: 2
-      name: $5_Chip
+      name: $50_Chip
       rect:
         serializedVersion: 2
         x: 0
@@ -278,7 +278,7 @@ TextureImporter:
       $100_Chip: -7776629875625593472
       $10_Chip: 7787134811296403497
       $500_Chip: 6044203002649615603
-      $5_Chip: -8914834504114311109
+      $50_Chip: -8914834504114311109
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

@@ -1,3 +1,4 @@
+// DeckManager Class
 using UnityEngine;
 using System.Collections.Generic;
 
@@ -5,7 +6,8 @@ public class DeckManager : MonoBehaviour
 {
     public static DeckManager Instance { get; private set; }
 
-    private Stack<Card> deck;
+    [SerializeField] private CardDatabase cardDatabase;
+    private Stack<CardData> deck;
 
     private void Awake()
     {
@@ -19,18 +21,19 @@ public class DeckManager : MonoBehaviour
 
     public void ShuffleDeck()
     {
-        List<Card> cards = CardFactory.CreateFullDeck();
-        cards = CardFactory.Shuffle(cards);
-        deck = new Stack<Card>(cards);
+        cardDatabase.Shuffle();
+        deck = new Stack<CardData>(cardDatabase.cards);
     }
 
-    public Card DrawCard()
+    public CardData DrawCard()
     {
         if (deck.Count > 0)
             return deck.Pop();
         else
+        {
             Debug.LogError("Deck is empty!");
-        return null;
+            return null;
+        }
     }
 
     public void ResetDeck()
@@ -40,7 +43,6 @@ public class DeckManager : MonoBehaviour
 
     public void DealInitialCards(PlayerController player, DealerController dealer)
     {
-        // Each player and the dealer get two cards
         player.AddCardToHand(DrawCard());
         player.AddCardToHand(DrawCard());
 
