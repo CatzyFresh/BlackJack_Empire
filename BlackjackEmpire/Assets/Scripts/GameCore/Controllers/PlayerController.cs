@@ -10,6 +10,7 @@ public class PlayerController : MonoBehaviour
     public void AddCardToHand(CardData card)
     {
         Hand.Add(card);
+        Debug.Log(Hand);
     }
 
     public int GetHandValue()

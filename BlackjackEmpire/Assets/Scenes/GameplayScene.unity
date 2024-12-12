@@ -213,6 +213,7 @@ GameObject:
   - component: {fileID: 82475523}
   - component: {fileID: 82475522}
   - component: {fileID: 82475521}
+  - component: {fileID: 82475527}
   m_Layer: 0
   m_Name: Scripts
   m_TagString: Untagged
@@ -247,6 +248,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: cf09ee14aa11e594ab8f423144d889ca, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  deckArea: {fileID: 1730835518}
   playerHandArea: {fileID: 5167209}
   dealerHandArea: {fileID: 1384375593}
   cardPrefab: {fileID: 1872677301369625837, guid: 1ec38db0929dd5442a9555ade81df046, type: 3}
@@ -254,6 +256,7 @@ MonoBehaviour:
   standButton: {fileID: 140004536}
   confirmBetButton: {fileID: 845657744}
   chipsArea: {fileID: 1103556886}
+  placingBetArea: {fileID: 1043607399}
   playerBalanceText: {fileID: 267684149}
   currentBetText: {fileID: 420478869}
   tenDollarsChipButton: {fileID: 1068786576}
@@ -263,6 +266,11 @@ MonoBehaviour:
   bettingPanel: {fileID: 1567775023}
   cardDatabase: {fileID: 11400000, guid: baabfefa0af46f045925b0e8d5b01d80, type: 2}
   cardBackSprite: {fileID: 976425113076782989, guid: e433c5cd54ff05641af5f9559c6d991b, type: 3}
+  animationManager: {fileID: 82475527}
+  tenDollarChipPrefab: {fileID: 4141411706074772629, guid: 082e59f4dde45b34ebeb5569f5efad4e, type: 3}
+  fiftyDollarChipPrefab: {fileID: 1515546541784222436, guid: b2c8ddb277ac61e4aa8e0a185bd86745, type: 3}
+  hundredDollarChipPrefab: {fileID: 4249543333741780261, guid: cfba62f9962ef9a40bdc5ceb8d3d0ae3, type: 3}
+  fiveHundredDollarChipPrefab: {fileID: 2862339943904634258, guid: e4f5a9fa1a44b6f4884768bbb3a03ca3, type: 3}
 --- !u!114 &82475522
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -329,6 +337,18 @@ MonoBehaviour:
   betManager: {fileID: 82475522}
   playerController: {fileID: 82475523}
   dealerController: {fileID: 82475524}
+--- !u!114 &82475527
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 82475519}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c64822d0d96870f479e386172d5fc3cd, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &115561811
 GameObject:
   m_ObjectHideFlags: 0
@@ -507,6 +527,8 @@ RectTransform:
   - {fileID: 1567775024}
   - {fileID: 1776366600}
   - {fileID: 1103556886}
+  - {fileID: 1043607399}
+  - {fileID: 1730835518}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
@@ -734,8 +756,8 @@ MonoBehaviour:
   m_fontSizeMin: 18
   m_fontSizeMax: 72
   m_fontStyle: 0
-  m_HorizontalAlignment: 1
-  m_VerticalAlignment: 256
+  m_HorizontalAlignment: 2
+  m_VerticalAlignment: 512
   m_textAlignment: 65535
   m_characterSpacing: 0
   m_wordSpacing: 0
@@ -1432,8 +1454,8 @@ MonoBehaviour:
   m_fontSizeMin: 18
   m_fontSizeMax: 72
   m_fontStyle: 0
-  m_HorizontalAlignment: 1
-  m_VerticalAlignment: 256
+  m_HorizontalAlignment: 2
+  m_VerticalAlignment: 512
   m_textAlignment: 65535
   m_characterSpacing: 0
   m_wordSpacing: 0
@@ -2199,6 +2221,41 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 943498474}
   m_CullTransparentMesh: 1
+--- !u!1 &1043607398
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1043607399}
+  m_Layer: 5
+  m_Name: Placing Bet Area
+  m_TagString: Untagged
+  m_Icon: {fileID: -964228994112308473, guid: 0000000000000000d000000000000000, type: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!224 &1043607399
+RectTransform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1043607398}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 123419514}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_AnchorMin: {x: 0.5, y: 0.5}
+  m_AnchorMax: {x: 0.5, y: 0.5}
+  m_AnchoredPosition: {x: 0, y: -200}
+  m_SizeDelta: {x: 200, y: 200}
+  m_Pivot: {x: 0.5, y: 0.5}
 --- !u!1 &1068786575
 GameObject:
   m_ObjectHideFlags: 0
@@ -3286,6 +3343,41 @@ RectTransform:
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 200, y: 200}
   m_Pivot: {x: 0.5, y: 0.5}
+--- !u!1 &1730835517
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1730835518}
+  m_Layer: 5
+  m_Name: Deck Area
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!224 &1730835518
+RectTransform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1730835517}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 123419514}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_AnchorMin: {x: 1, y: 1}
+  m_AnchorMax: {x: 1, y: 1}
+  m_AnchoredPosition: {x: 215, y: 328}
+  m_SizeDelta: {x: 319, y: 527}
+  m_Pivot: {x: 1, y: 1}
 --- !u!1 &1776366599
 GameObject:
   m_ObjectHideFlags: 0
@@ -3322,8 +3414,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 1}
   m_AnchorMax: {x: 0, y: 1}
-  m_AnchoredPosition: {x: 100, y: 0}
-  m_SizeDelta: {x: 300, y: 300}
+  m_AnchoredPosition: {x: 0, y: 0}
+  m_SizeDelta: {x: 400, y: 300}
   m_Pivot: {x: 0, y: 1}
 --- !u!114 &1776366601
 MonoBehaviour:
@@ -3338,7 +3430,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
-  m_Color: {r: 1, g: 1, b: 1, a: 0.392}
+  m_Color: {r: 0, g: 0, b: 0, a: 0.392}
   m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1

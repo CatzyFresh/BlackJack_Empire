@@ -7,6 +7,7 @@ using System.Collections.Generic;
 public class UIManager : MonoBehaviour
 {
     [Header("Card Display")]
+    [SerializeField] private Transform deckArea;
     [SerializeField] private Transform playerHandArea; // Parent for player card sprites
     [SerializeField] private Transform dealerHandArea; // Parent for dealer card sprites
     [SerializeField] private GameObject cardPrefab; // Prefab for card UI
@@ -18,6 +19,7 @@ public class UIManager : MonoBehaviour
 
     [Header("Betting UI")]
     [SerializeField] private Transform chipsArea; // Parent for chip buttons
+    [SerializeField] private Transform placingBetArea;
     [SerializeField] private TextMeshProUGUI playerBalanceText;
     [SerializeField] private TextMeshProUGUI currentBetText;
     [SerializeField] private Button tenDollarsChipButton;
@@ -32,6 +34,13 @@ public class UIManager : MonoBehaviour
 
     [Header("Card Back")]
     [SerializeField] private Sprite cardBackSprite;
+
+    [Header("UI Animations")]
+    [SerializeField] private AnimationManager animationManager;
+    [SerializeField] private GameObject tenDollarChipPrefab;
+    [SerializeField] private GameObject fiftyDollarChipPrefab;
+    [SerializeField] private GameObject hundredDollarChipPrefab;
+    [SerializeField] private GameObject fiveHundredDollarChipPrefab;
 
     public void InitializeUI()
     {
@@ -54,37 +63,20 @@ public class UIManager : MonoBehaviour
     }
 
 
-    public void UpdatePlayerHand(List<CardData> hand)
+    public void UpdatePlayerHand(CardData card)
     {
-        UpdateHandUI(playerHandArea, hand);
+        AddCardToHandUI(playerHandArea, card, true);
     }
 
-    public void UpdateDealerHand(List<CardData> hand, bool revealAll = false)
+    public void UpdateDealerHand(CardData card, bool reveal)
     {
-        UpdateHandUI(dealerHandArea, hand, revealAll);
+        AddCardToHandUI(dealerHandArea, card, reveal);
     }
 
-    private void UpdateHandUI(Transform handArea, List<CardData> hand, bool revealAll = true)
+    public void AddCardToHandUI(Transform handArea, CardData card, bool flip)
     {
-        foreach (Transform child in handArea)
-        {
-            Destroy(child.gameObject); // Clear old cards
-        }
-
-        foreach (CardData card in hand)
-        {
-            GameObject cardGO = Instantiate(cardPrefab, handArea);
-            Image cardImage = cardGO.GetComponent<Image>();
-
-            if (revealAll || hand.IndexOf(card) != 1) // Reveal all or only upcard for the dealer
-            {
-                cardImage.sprite = card.sprite;
-            }
-            else
-            {
-                cardImage.sprite = GetCardBackSprite();
-            }
-        }
+        GameObject cardGO = Instantiate(cardPrefab, deckArea);
+        PlayCardSlideAndFlipAnimation(cardGO, handArea, card, flip);
     }
 
     private Sprite GetCardBackSprite()
@@ -92,6 +84,53 @@ public class UIManager : MonoBehaviour
         return cardBackSprite; // Use the preassigned sprite
     }
 
+    #region Animation
+    public void PlayCardSlideAndFlipAnimation(GameObject cardGO,Transform handArea,CardData card, bool flip)
+    {
+        Vector3 targetPosition = handArea.position; // Adjust target based on your layout
+        animationManager.StartCoroutine(animationManager.SlideAndFlipCard(cardGO, handArea, targetPosition, card.sprite, flip));
+    }
+
+    public void FlipDealerHoleCard(Sprite cardFrontSprite)
+    {
+        if (dealerHandArea.childCount > 1) // Ensure the dealer has at least two cards
+        {
+            Transform holeCardTransform = dealerHandArea.GetChild(1); // Get the second card (hole card)
+            GameObject holeCardGO = holeCardTransform.gameObject;
+            animationManager.StartCoroutine(animationManager.FlipCard(holeCardGO, dealerHandArea, cardFrontSprite));
+        }
+        else
+        {
+            Debug.LogError("Dealer does not have a second card to flip.");
+        }
+    }
+
+    public void PlayChipSlideAnimation(int chipValue)
+    {
+        GameObject chip = null;
+        switch (chipValue)
+        {
+            case 10:
+                chip = Instantiate(tenDollarChipPrefab, chipsArea);
+                break;
+            case 50:
+                chip = Instantiate(fiftyDollarChipPrefab, chipsArea);
+                break;
+            case 100:
+                chip = Instantiate(hundredDollarChipPrefab, chipsArea);
+                break;
+            case 500:
+                chip = Instantiate(fiveHundredDollarChipPrefab, chipsArea);
+                break;
+        }
+
+        if (chip != null)
+        {
+            Vector3 targetPosition = placingBetArea.position; // Adjust based on your layout
+            animationManager.StartCoroutine(animationManager.SlideChip(chip, placingBetArea, targetPosition));
+        }
+    }
+    #endregion
 
     public void EnableActionButtons(bool enable)
     {
@@ -105,6 +144,15 @@ public class UIManager : MonoBehaviour
     {
         bettingPanel.SetActive(setActive);
         chipsArea.gameObject.SetActive(setActive);
+        placingBetArea.gameObject.SetActive(setActive);
+    }
+
+    public void ClearPlacingBetArea()
+    {
+        foreach (Transform child in placingBetArea)
+        {
+            Destroy(child.gameObject);
+        }
     }
 
     public void ClearHands()
