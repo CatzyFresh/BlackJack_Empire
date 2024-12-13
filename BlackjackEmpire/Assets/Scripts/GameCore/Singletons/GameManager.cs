@@ -1,4 +1,5 @@
 using System.Collections;
+using System;
 using UnityEngine;
 
 public class GameManager : MonoBehaviour
@@ -11,6 +12,7 @@ public class GameManager : MonoBehaviour
     [SerializeField] private PlayerController playerController;
     [SerializeField] private DealerController dealerController;
 
+    public event Action<string, Color> OnResultDecided;
 
     private void Awake()
     {
@@ -41,6 +43,7 @@ public class GameManager : MonoBehaviour
     private void StartBettingPhase()
     {
         Debug.Log("Starting betting phase...");
+        uiManager.ClearResultUI();
         uiManager.ClearPlacingBetArea();
         uiManager.ShowBettingUI(true);
         uiManager.UpdateBettingUI(0, betManager.PlayerBalance);
@@ -76,7 +79,7 @@ public class GameManager : MonoBehaviour
 
         //SimulatePlayerBet();
         uiManager.ShowBettingUI(false);
-
+        
         playerController.ResetHand();
         dealerController.ResetHand();
 
@@ -121,6 +124,7 @@ public class GameManager : MonoBehaviour
         if (playerController.GetHandValue() > 21)
         {
             Debug.Log("Player Busts! Dealer Wins.");
+            OnResultDecided?.Invoke("BUST!", Color.red);
             betManager.LoseBet();
             EndRound();
         }
@@ -153,6 +157,7 @@ public class GameManager : MonoBehaviour
         if (dealerController.GetHandValue() > 21)
         {
             Debug.Log("Dealer Busts! Player Wins.");
+            OnResultDecided?.Invoke("WIN!", Color.yellow);
             betManager.PayoutWinnings(2.0f);
         }
         else
@@ -174,19 +179,23 @@ public class GameManager : MonoBehaviour
         if (playerValue > dealerValue)
         {
             Debug.Log("Player Wins!");
+            OnResultDecided?.Invoke("WIN!", Color.yellow);
             betManager.PayoutWinnings(2.0f);
         }
         else if (playerValue < dealerValue)
         {
             Debug.Log("Dealer Wins!");
+            OnResultDecided?.Invoke("LOST!", Color.red);
             betManager.LoseBet();
         }
         else
         {
             Debug.Log("It's a Tie!");
+            OnResultDecided?.Invoke("PUSH!", Color.white);
             betManager.PayoutWinnings(1.0f);
         }
     }
+
 
     private void EndRound()
     {

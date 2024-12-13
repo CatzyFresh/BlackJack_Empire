@@ -27,6 +27,7 @@ public class UIManager : MonoBehaviour
     [SerializeField] private Button hundredDollarsChipButton;
     [SerializeField] private Button fivehundredDollarsChipButton;
     [SerializeField] private GameObject bettingPanel;
+    [SerializeField] private TextMeshProUGUI betTextDisplayNearChips;
 
 
     [Header("Card Database")]
@@ -42,6 +43,14 @@ public class UIManager : MonoBehaviour
     [SerializeField] private GameObject hundredDollarChipPrefab;
     [SerializeField] private GameObject fiveHundredDollarChipPrefab;
 
+    [Header("Result Display")]
+    [SerializeField] private TextMeshProUGUI roundResultText;
+
+    private void OnDisable()
+    {
+        GameManager.Instance.OnResultDecided -= UpdateResultUI;
+    }
+
     public void InitializeUI()
     {
         ClearHands();
@@ -52,14 +61,15 @@ public class UIManager : MonoBehaviour
         fiftyDollarsChipButton.onClick.AddListener(() => GameManager.Instance.OnPlaceBet(50));
         hundredDollarsChipButton.onClick.AddListener(() => GameManager.Instance.OnPlaceBet(100));
         fivehundredDollarsChipButton.onClick.AddListener(() => GameManager.Instance.OnPlaceBet(500));
+        GameManager.Instance.OnResultDecided += UpdateResultUI;
         EnableActionButtons(false);
-        //UpdateBettingUI(0, GameManager.Instance.GetPlayerBalance());
     }
 
     public void UpdateBettingUI(int currentBet, int playerBalance)
     {
         currentBetText.text = $"Bet: ${currentBet}";
         playerBalanceText.text = $"Balance: ${playerBalance}";
+        betTextDisplayNearChips.text = $"${currentBet}";
     }
 
 
@@ -145,6 +155,21 @@ public class UIManager : MonoBehaviour
         bettingPanel.SetActive(setActive);
         chipsArea.gameObject.SetActive(setActive);
         placingBetArea.gameObject.SetActive(setActive);
+        betTextDisplayNearChips.gameObject.SetActive(setActive);
+        currentBetText.gameObject.SetActive(!setActive);   
+    }
+
+    public void UpdateResultUI(string resultText, Color color)
+    {
+        roundResultText.text = resultText;
+        roundResultText.color = color;
+        roundResultText.gameObject.SetActive(true);
+    }
+
+    public void ClearResultUI()
+    {
+        roundResultText.text = string.Empty;
+        roundResultText.gameObject.SetActive(false);
     }
 
     public void ClearPlacingBetArea()
