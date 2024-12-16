@@ -47,3 +47,12 @@ Assets/StreamingAssets/crashlytics-build.properties
 # Temporary auto-generated Android Assets
 /[Aa]ssets/[Ss]treamingAssets/aa.meta
 /[Aa]ssets/[Ss]treamingAssets/aa/*
+
+# Google Mobile Ads Plugin
+Assets/GoogleMobileAds/Editor/Settings.xml
+Assets/GoogleMobileAds/Generated/
+Assets/GoogleMobileAds/Resources/
+Assets/Plugins/Android/google-mobile-ads-sdk/
+Assets/Plugins/Android/res/values/
+Assets/Plugins/iOS/GoogleMobileAds.framework/
+
