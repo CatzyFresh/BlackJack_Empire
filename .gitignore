@@ -96,4 +96,4 @@ Assets/StreamingAssets/crashlytics-build.properties
 /Assets/Scripts/UnityMainThreadDispatcher.meta
 
 #Layer Lab Files
-/Assets/Layer Lab
+**/Layer Lab/
