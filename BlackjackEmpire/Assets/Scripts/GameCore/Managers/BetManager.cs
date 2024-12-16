@@ -56,4 +56,24 @@ public class BetManager : MonoBehaviour
     {
         CurrentBet = 0;
     }
+
+    public void CancelBet()
+    {
+        PlayerBalance += CurrentBet;
+        CurrentBet = 0;
+    }
+
+    public void AllIn()
+    {
+        if (PlayerBalance > 0)
+        {
+            CurrentBet += PlayerBalance;
+            Debug.Log($"Player goes All In with ${PlayerBalance}. Current bet is now ${CurrentBet}.");
+            PlayerBalance = 0;
+        }
+        else
+        {
+            Debug.Log("Player cannot go All In with a balance of $0.");
+        }
+    }
 }

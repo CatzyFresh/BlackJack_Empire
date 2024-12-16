@@ -40,21 +40,38 @@ public class GameManager : MonoBehaviour
        
     }
 
+    public void OnInfoButtonClick()
+    {
+        uiManager.ToggleInfoPanel();
+    }
+
     private void StartBettingPhase()
     {
         Debug.Log("Starting betting phase...");
+        uiManager.HideHandValue();
         uiManager.ClearResultUI();
         uiManager.ClearPlacingBetArea();
         uiManager.ShowBettingUI(true);
-        uiManager.UpdateBettingUI(0, betManager.PlayerBalance);
+        uiManager.UpdateBettingUI(0, betManager.PlayerBalance, false);
     }
 
     public void OnPlaceBet(int chipValue)
     {
+        if(betManager.PlayerBalance < chipValue)
+        {
+            uiManager.ShowFeedback("Not enough balance!");
+            return;
+        }
         Debug.Log($"Placing bet with chip value: {chipValue}");
         betManager.PlaceBet(chipValue);
-        uiManager.UpdateBettingUI(betManager.CurrentBet, betManager.PlayerBalance);
+        uiManager.UpdateBettingUI(betManager.CurrentBet, betManager.PlayerBalance, false);
         uiManager.PlayChipSlideAnimation(chipValue);
+    }
+
+    public void OnCancelBet()
+    {
+        betManager.CancelBet();
+        uiManager.UpdateBettingUI(betManager.CurrentBet, betManager.PlayerBalance, true);
     }
 
     public void OnConfirmBet()
@@ -68,7 +85,14 @@ public class GameManager : MonoBehaviour
         else
         {
             Debug.Log("Cannot start round without placing a bet.");
+            uiManager.ShowFeedback("Not enough balance!");
         }
+    }
+
+    public void OnAllIn()
+    {
+        betManager.AllIn();
+        uiManager.UpdateBettingUI(betManager.CurrentBet, betManager.PlayerBalance, false);
     }
 
     public void StartRound()
@@ -84,9 +108,6 @@ public class GameManager : MonoBehaviour
         dealerController.ResetHand();
 
         StartCoroutine(DealInitialCardsAnimation());
-
-        //uiManager.UpdatePlayerHand(playerController.Hand);
-        //uiManager.UpdateDealerHand(dealerController.Hand, revealAll: false);
 
         uiManager.EnableActionButtons(true);
     }
@@ -106,12 +127,18 @@ public class GameManager : MonoBehaviour
             yield return new WaitForSeconds(0.5f);
         }
 
+        int playerHandValue = playerController.GetHandValue();
+        int dealerUpCardValue = dealerController.Hand[0].GetBlackjackValue();
+
+
+        uiManager.ShowHandValue(playerHandValue, 0, dealerUpCardValue, revealDealerHand: false);
+
+        //Debug Logging 
         int initialPlayerValue = playerController.GetHandValue();
         int initialDealerValue = dealerController.GetHandValue();
         Debug.Log($"Player's Hand Value: {initialPlayerValue}");
         Debug.Log($"Dealer's Hand Value: {initialDealerValue}");
-        //uiManager.UpdatePlayerHand(playerController.Hand);
-        //uiManager.UpdateDealerHand(dealerController.Hand, revealAll: false);
+     
     }
 
     public void OnPlayerHit()
@@ -120,6 +147,10 @@ public class GameManager : MonoBehaviour
         var card = deckManager.DrawCard();
         playerController.AddCardToHand(card);
         uiManager.UpdatePlayerHand(card);
+
+        int playerHandValue = playerController.GetHandValue();
+        int dealerUpCardValue = dealerController.Hand[0].GetBlackjackValue();
+        uiManager.ShowHandValue(playerHandValue, 0, dealerUpCardValue, revealDealerHand: false);
 
         if (playerController.GetHandValue() > 21)
         {
@@ -138,6 +169,51 @@ public class GameManager : MonoBehaviour
         
     }
 
+    public void OnDoubleDown()
+    {
+        if (betManager.PlayerBalance >= betManager.CurrentBet)
+        {
+            Debug.Log("Player chooses to Double Down.");
+
+            // Double the bet
+            betManager.PlaceBet(betManager.CurrentBet);
+
+            // Give the player one card
+            var card = deckManager.DrawCard();
+            playerController.AddCardToHand(card);
+            uiManager.UpdatePlayerHand(card);
+
+            //Show hand value in UI
+            int playerHandValue = playerController.GetHandValue();
+            int dealerUpCardValue = dealerController.Hand[0].GetBlackjackValue();
+            uiManager.ShowHandValue(playerHandValue, 0, dealerUpCardValue, revealDealerHand: false);
+
+            // Disable action buttons
+            uiManager.EnableActionButtons(false);
+
+            // Check if Player Busts and then Proceed to dealer's turn
+            if (playerController.GetHandValue() > 21)
+            {
+                Debug.Log("Player Busts! Dealer Wins.");
+                OnResultDecided?.Invoke("BUST!", Color.red);
+                betManager.LoseBet();
+                EndRound();
+            }
+            else
+            {
+                
+                StartCoroutine(DealerTurnWithAnimation());
+            }
+            
+        }
+        else
+        {
+            Debug.Log("Not enough balance to Double Down.");
+            uiManager.ShowFeedback("Not enough balance to Double Down!");
+        }
+    }
+
+
     private IEnumerator DealerTurnWithAnimation()
     {
         Debug.Log("Dealer's Turn...");
@@ -146,19 +222,34 @@ public class GameManager : MonoBehaviour
         uiManager.FlipDealerHoleCard(dealerController.Hand[1].sprite);
         yield return new WaitForSeconds(0.5f); // Wait for the flip animation to complete
 
+        // Update hand values after flipping the hole card
+        int dealerHandValue = dealerController.GetHandValue();
+        int playerHandValue = playerController.GetHandValue();
+        uiManager.ShowHandValue(playerHandValue, dealerHandValue, 0, revealDealerHand: true);
+
+
         while (dealerController.GetHandValue() < 17)
         {
             var card = deckManager.DrawCard();
             dealerController.AddCardToHand(card);
             uiManager.UpdateDealerHand(card, true);
+            uiManager.ShowHandValue(playerHandValue, dealerHandValue, 0, revealDealerHand: true);
             yield return new WaitForSeconds(0.5f);
         }
 
         if (dealerController.GetHandValue() > 21)
         {
             Debug.Log("Dealer Busts! Player Wins.");
-            OnResultDecided?.Invoke("WIN!", Color.yellow);
-            betManager.PayoutWinnings(2.0f);
+            if (playerController.GetHandValue() == 21)
+            {
+                BlackJack();
+            }
+            else
+            {
+                OnResultDecided?.Invoke("WIN!", Color.yellow);
+                betManager.PayoutWinnings(2.0f);
+            }
+            
         }
         else
         {
@@ -173,10 +264,16 @@ public class GameManager : MonoBehaviour
         int playerValue = playerController.GetHandValue();
         int dealerValue = dealerController.GetHandValue();
 
+        uiManager.ShowHandValue(playerValue, dealerValue, 0, revealDealerHand: true);
+
         Debug.Log($"Player's Hand Value: {playerValue}");
         Debug.Log($"Dealer's Hand Value: {dealerValue}");
 
-        if (playerValue > dealerValue)
+        if(playerValue == 21)
+        {
+            BlackJack();
+        }
+        else if (playerValue > dealerValue)
         {
             Debug.Log("Player Wins!");
             OnResultDecided?.Invoke("WIN!", Color.yellow);
@@ -196,12 +293,18 @@ public class GameManager : MonoBehaviour
         }
     }
 
+    private void BlackJack()
+    {
+        Debug.Log("Player Wins With BlackJack!");
+        betManager.PayoutWinnings(2.5f);
+        OnResultDecided?.Invoke("BlackJack!", Color.yellow);
+    }
 
     private void EndRound()
     {
         Debug.Log("Round Ended.");
         uiManager.EnableActionButtons(false);
-        uiManager.UpdateBettingUI(0, betManager.PlayerBalance);
+        uiManager.UpdateBettingUI(0, betManager.PlayerBalance, true);
         StartCoroutine(ShowResultAndReset());
     }
 

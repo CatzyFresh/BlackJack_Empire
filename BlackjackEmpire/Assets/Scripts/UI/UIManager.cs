@@ -11,11 +11,18 @@ public class UIManager : MonoBehaviour
     [SerializeField] private Transform playerHandArea; // Parent for player card sprites
     [SerializeField] private Transform dealerHandArea; // Parent for dealer card sprites
     [SerializeField] private GameObject cardPrefab; // Prefab for card UI
+    [SerializeField] private GameObject dealerHandValueTextPanel;
+    [SerializeField] private TextMeshProUGUI dealerHandValueText;
+    [SerializeField] private GameObject playerHandValueTextPanel;
+    [SerializeField] private TextMeshProUGUI playerHandValueText;
 
     [Header("Action Buttons")]
     [SerializeField] private Button hitButton;
     [SerializeField] private Button standButton;
     [SerializeField] private Button confirmBetButton;
+    [SerializeField] private Button resetBetButton;
+    [SerializeField] private Button allinButton;
+    [SerializeField] private Button doubleDownButton;
 
     [Header("Betting UI")]
     [SerializeField] private Transform chipsArea; // Parent for chip buttons
@@ -29,9 +36,8 @@ public class UIManager : MonoBehaviour
     [SerializeField] private GameObject bettingPanel;
     [SerializeField] private TextMeshProUGUI betTextDisplayNearChips;
 
-
     [Header("Card Database")]
-    [SerializeField] private CardDatabase cardDatabase; // Reference to the card database
+    [SerializeField] private CardDatabase cardDatabase;
 
     [Header("Card Back")]
     [SerializeField] private Sprite cardBackSprite;
@@ -46,6 +52,14 @@ public class UIManager : MonoBehaviour
     [Header("Result Display")]
     [SerializeField] private TextMeshProUGUI roundResultText;
 
+    [Header("Feedback UI")]
+    [SerializeField] private FeedbackUI feedbackUI; 
+
+    [Header("Info UI")]
+    [SerializeField] private InfoUI infoUI;
+    [SerializeField] private Button infoButton;
+    [SerializeField] private Button closeInfoButton;
+
     private void OnDisable()
     {
         GameManager.Instance.OnResultDecided -= UpdateResultUI;
@@ -54,9 +68,14 @@ public class UIManager : MonoBehaviour
     public void InitializeUI()
     {
         ClearHands();
+        infoButton.onClick.AddListener(() => GameManager.Instance.OnInfoButtonClick());
+        closeInfoButton.onClick.AddListener(() => GameManager.Instance.OnInfoButtonClick());
         hitButton.onClick.AddListener(() => GameManager.Instance.OnPlayerHit());
         standButton.onClick.AddListener(() => GameManager.Instance.OnPlayerStand());
+        doubleDownButton.onClick.AddListener(() => GameManager.Instance.OnDoubleDown());
         confirmBetButton.onClick.AddListener(() => GameManager.Instance.OnConfirmBet());
+        resetBetButton.onClick.AddListener(() => GameManager.Instance.OnCancelBet());
+        allinButton.onClick.AddListener(() => GameManager.Instance.OnAllIn());
         tenDollarsChipButton.onClick.AddListener(() => GameManager.Instance.OnPlaceBet(10));
         fiftyDollarsChipButton.onClick.AddListener(() => GameManager.Instance.OnPlaceBet(50));
         hundredDollarsChipButton.onClick.AddListener(() => GameManager.Instance.OnPlaceBet(100));
@@ -65,11 +84,19 @@ public class UIManager : MonoBehaviour
         EnableActionButtons(false);
     }
 
-    public void UpdateBettingUI(int currentBet, int playerBalance)
+    public void UpdateBettingUI(int currentBet, int playerBalance, bool isReset)
     {
         currentBetText.text = $"Bet: ${currentBet}";
         playerBalanceText.text = $"Balance: ${playerBalance}";
         betTextDisplayNearChips.text = $"${currentBet}";
+
+        if (isReset)
+        {
+            foreach (Transform child in placingBetArea)
+            {
+                Destroy(child.gameObject);
+            }
+        }
     }
 
 
@@ -87,6 +114,33 @@ public class UIManager : MonoBehaviour
     {
         GameObject cardGO = Instantiate(cardPrefab, deckArea);
         PlayCardSlideAndFlipAnimation(cardGO, handArea, card, flip);
+    }
+
+    public void ShowHandValue(int playerHandValue, int dealerHandValue, int dealerUpCardValue, bool revealDealerHand)
+    {
+        // Show the player's hand value
+        playerHandValueTextPanel.SetActive(true);
+        playerHandValueText.text = playerHandValue.ToString();
+
+        // Show the dealer's hand value based on the revealDealerHand flag
+        dealerHandValueTextPanel.SetActive(true);
+
+        if (revealDealerHand)
+        {
+            // Show the full dealer hand value when the hole card is flipped
+            dealerHandValueText.text = dealerHandValue.ToString();
+        }
+        else
+        {
+            // Show only the value of the upcard before the hole card is flipped
+            dealerHandValueText.text = dealerUpCardValue.ToString();
+        }
+    }
+
+    public void HideHandValue()
+    {
+        playerHandValueTextPanel.SetActive(false);
+        dealerHandValueTextPanel.SetActive(false);
     }
 
     private Sprite GetCardBackSprite()
@@ -146,8 +200,10 @@ public class UIManager : MonoBehaviour
     {
         hitButton.interactable = enable;
         standButton.interactable = enable;
+        doubleDownButton.interactable = enable;
         hitButton.gameObject.SetActive(enable);
         standButton.gameObject.SetActive(enable);
+        doubleDownButton.gameObject.SetActive(enable);
     }
 
     public void ShowBettingUI(bool setActive)
@@ -191,5 +247,15 @@ public class UIManager : MonoBehaviour
         {
             Destroy(child.gameObject);
         }
+    }
+
+    public void ShowFeedback(string message)
+    {
+        feedbackUI.ShowFeedback(message);
+    }
+
+    public void ToggleInfoPanel()
+    {
+        infoUI.ToggleInfoPanel();
     }
 }
