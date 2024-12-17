@@ -308,6 +308,27 @@ public class GameManager : MonoBehaviour
         StartCoroutine(ShowResultAndReset());
     }
 
+    private IEnumerator PauseAndShowAd()
+    {
+        // Pause the game during the ad
+        Time.timeScale = 0;
+
+        // Show interstitial ad
+        if (AdManager.Instance != null)
+        {
+            AdManager.Instance.ShowInterstitialAd();
+        }
+
+        // Wait until the ad is done playing (ad logic resumes time)
+        while (AdManager.Instance != null && !AdManager.Instance.IsAdClosed)
+        {
+            yield return null;
+        }
+
+        // Resume the game
+        Time.timeScale = 1;
+    }
+
     private IEnumerator ShowResultAndReset()
     {
         yield return new WaitForSeconds(2.0f); // Wait for the player to see the dealer's cards
@@ -316,6 +337,7 @@ public class GameManager : MonoBehaviour
     private void ResetRound()
     {
         Debug.Log("Resetting round for next game.");
+        StartCoroutine(PauseAndShowAd());
         deckManager.ResetDeck();
         betManager.ResetBet();
         uiManager.ClearHands();
