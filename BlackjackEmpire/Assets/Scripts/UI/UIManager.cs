@@ -258,4 +258,6 @@ public class UIManager : MonoBehaviour
     {
         infoUI.ToggleInfoPanel();
     }
+
+   
 }

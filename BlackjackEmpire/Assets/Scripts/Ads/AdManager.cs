@@ -354,11 +354,31 @@ public class AdManager : MonoBehaviour
         {
             _rewardedAd.Show((Reward reward) =>
             {
-                // TODO: Reward the user.
+                // Reward the user with 100 chips
+                int rewardAmount = 100;
                 Debug.Log(String.Format(rewardMsg, reward.Type, reward.Amount));
+
+                // Update player's chips in GuestLoginManager
+                if (GuestLoginManager.Instance.CurrentPlayerData != null)
+                {
+                    GuestLoginManager.Instance.CurrentPlayerData.Chips += rewardAmount;
+                    Debug.Log($"Player rewarded with {rewardAmount} chips. New balance: {GuestLoginManager.Instance.CurrentPlayerData.Chips}");
+
+                    // Save the updated data
+                    GuestLoginManager.Instance.SavePlayerData();
+                }
+                else
+                {
+                    Debug.LogWarning("Player data not found. Reward could not be added.");
+                }
             });
         }
+        else
+        {
+            Debug.LogError("Rewarded ad is not ready yet.");
+        }
     }
+
 
     private void RegisterEventHandlers(RewardedAd ad)
     {

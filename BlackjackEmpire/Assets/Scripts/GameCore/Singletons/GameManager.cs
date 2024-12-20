@@ -14,6 +14,17 @@ public class GameManager : MonoBehaviour
 
     public event Action<string, Color> OnResultDecided;
 
+    private int localWins = 0;
+    private int localLosses = 0;
+    private int localTotalGames = 0;
+
+    private enum ResultType
+    {
+        Win,
+        Loss,
+        Tie
+    }
+
     private void Awake()
     {
         if (Instance != null && Instance != this)
@@ -32,6 +43,8 @@ public class GameManager : MonoBehaviour
 
     private void InitializeGame()
     {
+        int savedBalance = GuestLoginManager.Instance.CurrentPlayerData.Chips;
+        betManager.InitializeBalance(savedBalance);
         Debug.Log("Game Initialized.");
         deckManager.ShuffleDeck();
         Debug.Log("Deck shuffled.");
@@ -44,6 +57,54 @@ public class GameManager : MonoBehaviour
     {
         uiManager.ToggleInfoPanel();
     }
+
+    public void SaveGame()
+    {
+        Debug.Log("Saving game progress...");
+
+        // Update player data
+        UpdatePlayerStats();
+        UpdatePlayerChips();
+
+        // Persist the data
+        SavePlayerData();
+        Debug.Log("Game progress saved successfully.");
+
+        // Local function to update player stats
+        void UpdatePlayerStats()
+        {
+            var playerData = GuestLoginManager.Instance.CurrentPlayerData;
+            // Update stats in PlayerData
+            playerData.Wins += localWins;
+            playerData.Losses += localLosses;
+            playerData.TotalGamesPlayed += localTotalGames;
+            // Reset local stats
+            ResetLocalStats();
+        }
+
+        // Local function to update chips
+        void UpdatePlayerChips()
+        {
+            var playerData = GuestLoginManager.Instance.CurrentPlayerData;
+            // Update chips in PlayerData
+            playerData.Chips = betManager.PlayerBalance;
+        }
+
+        // Local function to reset local stats
+        void ResetLocalStats()
+        {
+            localWins = 0;
+            localLosses = 0;
+            localTotalGames = 0;
+        }
+
+        // Local function to save player data
+        void SavePlayerData()
+        {
+            GuestLoginManager.Instance.SavePlayerData();
+        }
+    }
+
 
     private void StartBettingPhase()
     {
@@ -157,6 +218,7 @@ public class GameManager : MonoBehaviour
             Debug.Log("Player Busts! Dealer Wins.");
             OnResultDecided?.Invoke("BUST!", Color.red);
             betManager.LoseBet();
+            UpdateRoundStats(ResultType.Loss);
             EndRound();
         }
     }
@@ -197,6 +259,7 @@ public class GameManager : MonoBehaviour
                 Debug.Log("Player Busts! Dealer Wins.");
                 OnResultDecided?.Invoke("BUST!", Color.red);
                 betManager.LoseBet();
+                UpdateRoundStats(ResultType.Loss);
                 EndRound();
             }
             else
@@ -243,13 +306,15 @@ public class GameManager : MonoBehaviour
             if (playerController.GetHandValue() == 21)
             {
                 BlackJack();
+                UpdateRoundStats(ResultType.Win);
             }
             else
             {
                 OnResultDecided?.Invoke("WIN!", Color.yellow);
                 betManager.PayoutWinnings(2.0f);
+                UpdateRoundStats(ResultType.Win);
             }
-            
+
         }
         else
         {
@@ -269,27 +334,32 @@ public class GameManager : MonoBehaviour
         Debug.Log($"Player's Hand Value: {playerValue}");
         Debug.Log($"Dealer's Hand Value: {dealerValue}");
 
-        if(playerValue == 21)
+        
+        if (playerValue > dealerValue)
         {
-            BlackJack();
-        }
-        else if (playerValue > dealerValue)
-        {
+            if (playerValue == 21)
+            {
+                BlackJack();
+            }
             Debug.Log("Player Wins!");
             OnResultDecided?.Invoke("WIN!", Color.yellow);
             betManager.PayoutWinnings(2.0f);
+            UpdateRoundStats(ResultType.Win);
         }
         else if (playerValue < dealerValue)
         {
             Debug.Log("Dealer Wins!");
             OnResultDecided?.Invoke("LOST!", Color.red);
             betManager.LoseBet();
+            UpdateRoundStats(ResultType.Loss);
+
         }
         else
         {
             Debug.Log("It's a Tie!");
             OnResultDecided?.Invoke("PUSH!", Color.white);
             betManager.PayoutWinnings(1.0f);
+            UpdateRoundStats(ResultType.Tie);
         }
     }
 
@@ -298,6 +368,7 @@ public class GameManager : MonoBehaviour
         Debug.Log("Player Wins With BlackJack!");
         betManager.PayoutWinnings(2.5f);
         OnResultDecided?.Invoke("BlackJack!", Color.yellow);
+        UpdateRoundStats(ResultType.Win);
     }
 
     private void EndRound()
@@ -305,7 +376,50 @@ public class GameManager : MonoBehaviour
         Debug.Log("Round Ended.");
         uiManager.EnableActionButtons(false);
         uiManager.UpdateBettingUI(0, betManager.PlayerBalance, true);
+        SaveGame();
         StartCoroutine(ShowResultAndReset());
+    }
+
+    // Function to update local stats
+    private void UpdateRoundStats(ResultType result)
+    {
+        localTotalGames++; // Increment total games in all cases
+
+        switch (result)
+        {
+            case ResultType.Win:
+                localWins++;
+                Debug.Log($"Round Result: Win. Wins: {localWins}, Losses: {localLosses}, Total Games: {localTotalGames}");
+                break;
+            case ResultType.Loss:
+                localLosses++;
+                Debug.Log($"Round Result: Loss. Wins: {localWins}, Losses: {localLosses}, Total Games: {localTotalGames}");
+                break;
+            case ResultType.Tie:
+                Debug.Log($"Round Result: Tie. Wins: {localWins}, Losses: {localLosses}, Total Games: {localTotalGames}");
+                break;
+        }
+    }
+
+    private void UpdatePlayerStats(bool win)
+    {
+        var playerData = GuestLoginManager.Instance.CurrentPlayerData;
+
+        playerData.TotalGamesPlayed++;
+
+        if (win)
+        {
+            playerData.Wins++;
+        }
+        else
+        {
+            playerData.Losses++;
+        }
+
+        Debug.Log($"Stats Updated: Wins - {playerData.Wins}, Losses - {playerData.Losses}, Win Rate - {playerData.WinRate}%");
+
+        // Save progress
+        GuestLoginManager.Instance.SavePlayerData();
     }
 
     private IEnumerator PauseAndShowAd()
@@ -344,6 +458,10 @@ public class GameManager : MonoBehaviour
         StartBettingPhase();
     }
 
+    private void OnApplicationQuit()
+    {
+        SaveGame();
+    }
 
     #region simulation
     //private void SimulatePlayerBet()
@@ -380,5 +498,5 @@ public class GameManager : MonoBehaviour
     //    }
     //    return result.TrimEnd(',', ' ');
     //}
-#endregion
+    #endregion
 }
