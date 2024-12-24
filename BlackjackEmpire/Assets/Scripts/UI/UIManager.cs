@@ -60,14 +60,22 @@ public class UIManager : MonoBehaviour
     [SerializeField] private Button infoButton;
     [SerializeField] private Button closeInfoButton;
 
+    [Header("Back to Home UI")]
+    [SerializeField] private GameObject gameplayCanvas;
+    [SerializeField] private GameObject mainMenuCanvas;
+    [SerializeField] private Button homeButton;
+    
+
     private void OnDisable()
     {
         GameManager.Instance.OnResultDecided -= UpdateResultUI;
     }
 
+
     public void InitializeUI()
     {
         ClearHands();
+        homeButton.onClick.AddListener(() => GameManager.Instance.OnHomeButtonClick());
         infoButton.onClick.AddListener(() => GameManager.Instance.OnInfoButtonClick());
         closeInfoButton.onClick.AddListener(() => GameManager.Instance.OnInfoButtonClick());
         hitButton.onClick.AddListener(() => GameManager.Instance.OnPlayerHit());
@@ -259,5 +267,10 @@ public class UIManager : MonoBehaviour
         infoUI.ToggleInfoPanel();
     }
 
+    public void NavigateToMainMenu()
+    {
+        gameplayCanvas.SetActive(false);
+        mainMenuCanvas.SetActive(true);
+    }
    
 }

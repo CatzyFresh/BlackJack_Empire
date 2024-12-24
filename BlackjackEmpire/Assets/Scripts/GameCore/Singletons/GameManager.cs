@@ -1,6 +1,7 @@
 using System.Collections;
 using System;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public class GameManager : MonoBehaviour
 {
@@ -17,13 +18,11 @@ public class GameManager : MonoBehaviour
     private int localWins = 0;
     private int localLosses = 0;
     private int localTotalGames = 0;
+    private int localBlackjacks = 0;
 
-    private enum ResultType
-    {
-        Win,
-        Loss,
-        Tie
-    }
+    [SerializeField] private GameXPSource xpSource;
+
+    public bool IsGameInitialized { get; private set; } = false;
 
     private void Awake()
     {
@@ -38,10 +37,21 @@ public class GameManager : MonoBehaviour
 
     private void Start()
     {
-        InitializeGame();
+        GuestLoginManager.OnPlayerDataUpdated += SyncBetManagerBalance;
     }
 
-    private void InitializeGame()
+    private void SyncBetManagerBalance()
+    {
+        if (GuestLoginManager.Instance != null && GuestLoginManager.Instance.CurrentPlayerData != null)
+        {
+            int savedBalance = GuestLoginManager.Instance.CurrentPlayerData.Chips;
+            betManager.SetBalanceFromPlayerData(savedBalance);
+            Debug.Log($"BetManager balance synced: {savedBalance}");
+        }
+    }
+
+
+    public void InitializeGame()
     {
         int savedBalance = GuestLoginManager.Instance.CurrentPlayerData.Chips;
         betManager.InitializeBalance(savedBalance);
@@ -50,7 +60,7 @@ public class GameManager : MonoBehaviour
         Debug.Log("Deck shuffled.");
         uiManager.InitializeUI();
         StartBettingPhase();
-       
+        IsGameInitialized = true;
     }
 
     public void OnInfoButtonClick()
@@ -58,27 +68,36 @@ public class GameManager : MonoBehaviour
         uiManager.ToggleInfoPanel();
     }
 
+    public void OnHomeButtonClick()
+    {
+        SaveGame();
+        uiManager.NavigateToMainMenu();
+    }
+
     public void SaveGame()
     {
         Debug.Log("Saving game progress...");
 
-        // Update player data
+        // Update player stats and chips
         UpdatePlayerStats();
         UpdatePlayerChips();
 
+        // Update XP and level from LevelSystemManager
+        UpdatePlayerXPAndLevel();
+
         // Persist the data
         SavePlayerData();
+
         Debug.Log("Game progress saved successfully.");
 
         // Local function to update player stats
         void UpdatePlayerStats()
         {
             var playerData = GuestLoginManager.Instance.CurrentPlayerData;
-            // Update stats in PlayerData
             playerData.Wins += localWins;
             playerData.Losses += localLosses;
             playerData.TotalGamesPlayed += localTotalGames;
-            // Reset local stats
+            playerData.BlackJacks += localBlackjacks;
             ResetLocalStats();
         }
 
@@ -86,7 +105,6 @@ public class GameManager : MonoBehaviour
         void UpdatePlayerChips()
         {
             var playerData = GuestLoginManager.Instance.CurrentPlayerData;
-            // Update chips in PlayerData
             playerData.Chips = betManager.PlayerBalance;
         }
 
@@ -96,6 +114,13 @@ public class GameManager : MonoBehaviour
             localWins = 0;
             localLosses = 0;
             localTotalGames = 0;
+            localBlackjacks = 0;
+        }
+
+        // Local function to update XP and level
+        void UpdatePlayerXPAndLevel()
+        {
+            LevelSystemManager.Instance.SyncPlayerData();
         }
 
         // Local function to save player data
@@ -170,7 +195,7 @@ public class GameManager : MonoBehaviour
 
         StartCoroutine(DealInitialCardsAnimation());
 
-        uiManager.EnableActionButtons(true);
+        
     }
 
     private IEnumerator DealInitialCardsAnimation()
@@ -193,6 +218,9 @@ public class GameManager : MonoBehaviour
 
 
         uiManager.ShowHandValue(playerHandValue, 0, dealerUpCardValue, revealDealerHand: false);
+
+        yield return new WaitForSeconds(0.2f);
+        uiManager.EnableActionButtons(true);
 
         //Debug Logging 
         int initialPlayerValue = playerController.GetHandValue();
@@ -218,7 +246,7 @@ public class GameManager : MonoBehaviour
             Debug.Log("Player Busts! Dealer Wins.");
             OnResultDecided?.Invoke("BUST!", Color.red);
             betManager.LoseBet();
-            UpdateRoundStats(ResultType.Loss);
+            UpdateRoundStats(GameXPSource.GameResult.Loss);
             EndRound();
         }
     }
@@ -259,7 +287,7 @@ public class GameManager : MonoBehaviour
                 Debug.Log("Player Busts! Dealer Wins.");
                 OnResultDecided?.Invoke("BUST!", Color.red);
                 betManager.LoseBet();
-                UpdateRoundStats(ResultType.Loss);
+                UpdateRoundStats(GameXPSource.GameResult.Loss);
                 EndRound();
             }
             else
@@ -296,6 +324,8 @@ public class GameManager : MonoBehaviour
             var card = deckManager.DrawCard();
             dealerController.AddCardToHand(card);
             uiManager.UpdateDealerHand(card, true);
+            yield return new WaitForSeconds(0.5f);
+            dealerHandValue = dealerController.GetHandValue();
             uiManager.ShowHandValue(playerHandValue, dealerHandValue, 0, revealDealerHand: true);
             yield return new WaitForSeconds(0.5f);
         }
@@ -303,16 +333,19 @@ public class GameManager : MonoBehaviour
         if (dealerController.GetHandValue() > 21)
         {
             Debug.Log("Dealer Busts! Player Wins.");
+            dealerHandValue = dealerController.GetHandValue();
+            uiManager.ShowHandValue(playerHandValue, dealerHandValue, 0, revealDealerHand: true);
+
             if (playerController.GetHandValue() == 21)
             {
                 BlackJack();
-                UpdateRoundStats(ResultType.Win);
+                UpdateRoundStats(GameXPSource.GameResult.Win);
             }
             else
             {
                 OnResultDecided?.Invoke("WIN!", Color.yellow);
                 betManager.PayoutWinnings(2.0f);
-                UpdateRoundStats(ResultType.Win);
+                UpdateRoundStats(GameXPSource.GameResult.Win);
             }
 
         }
@@ -344,14 +377,14 @@ public class GameManager : MonoBehaviour
             Debug.Log("Player Wins!");
             OnResultDecided?.Invoke("WIN!", Color.yellow);
             betManager.PayoutWinnings(2.0f);
-            UpdateRoundStats(ResultType.Win);
+            UpdateRoundStats(GameXPSource.GameResult.Win);
         }
         else if (playerValue < dealerValue)
         {
             Debug.Log("Dealer Wins!");
             OnResultDecided?.Invoke("LOST!", Color.red);
             betManager.LoseBet();
-            UpdateRoundStats(ResultType.Loss);
+            UpdateRoundStats(GameXPSource.GameResult.Loss);
 
         }
         else
@@ -359,7 +392,7 @@ public class GameManager : MonoBehaviour
             Debug.Log("It's a Tie!");
             OnResultDecided?.Invoke("PUSH!", Color.white);
             betManager.PayoutWinnings(1.0f);
-            UpdateRoundStats(ResultType.Tie);
+            UpdateRoundStats(GameXPSource.GameResult.Tie);
         }
     }
 
@@ -368,7 +401,7 @@ public class GameManager : MonoBehaviour
         Debug.Log("Player Wins With BlackJack!");
         betManager.PayoutWinnings(2.5f);
         OnResultDecided?.Invoke("BlackJack!", Color.yellow);
-        UpdateRoundStats(ResultType.Win);
+        UpdateRoundStats(GameXPSource.GameResult.BlackJack);
     }
 
     private void EndRound()
@@ -381,46 +414,35 @@ public class GameManager : MonoBehaviour
     }
 
     // Function to update local stats
-    private void UpdateRoundStats(ResultType result)
+    private void UpdateRoundStats(GameXPSource.GameResult result)
     {
         localTotalGames++; // Increment total games in all cases
 
         switch (result)
         {
-            case ResultType.Win:
+            case GameXPSource.GameResult.Win:
                 localWins++;
                 Debug.Log($"Round Result: Win. Wins: {localWins}, Losses: {localLosses}, Total Games: {localTotalGames}");
                 break;
-            case ResultType.Loss:
+            case GameXPSource.GameResult.Loss:
                 localLosses++;
                 Debug.Log($"Round Result: Loss. Wins: {localWins}, Losses: {localLosses}, Total Games: {localTotalGames}");
                 break;
-            case ResultType.Tie:
+            case GameXPSource.GameResult.Tie:
                 Debug.Log($"Round Result: Tie. Wins: {localWins}, Losses: {localLosses}, Total Games: {localTotalGames}");
                 break;
+            case GameXPSource.GameResult.BlackJack:
+                localWins++;
+                localBlackjacks++;// BlackJack counts as a win
+                Debug.Log($"Round Result: BlackJack! Wins: {localWins}, Losses: {localLosses}, Total Games: {localTotalGames}");
+                break;
         }
+
+        xpSource.SetGameResult(result);
+        int xp = xpSource.GetXP();
+        LevelSystemManager.Instance.AddXP(xp, xpSource.GetSourceName());
     }
 
-    private void UpdatePlayerStats(bool win)
-    {
-        var playerData = GuestLoginManager.Instance.CurrentPlayerData;
-
-        playerData.TotalGamesPlayed++;
-
-        if (win)
-        {
-            playerData.Wins++;
-        }
-        else
-        {
-            playerData.Losses++;
-        }
-
-        Debug.Log($"Stats Updated: Wins - {playerData.Wins}, Losses - {playerData.Losses}, Win Rate - {playerData.WinRate}%");
-
-        // Save progress
-        GuestLoginManager.Instance.SavePlayerData();
-    }
 
     private IEnumerator PauseAndShowAd()
     {

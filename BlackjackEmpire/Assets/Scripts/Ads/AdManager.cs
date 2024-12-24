@@ -10,6 +10,7 @@ public class AdManager : MonoBehaviour
     private InterstitialAd _interstitialAd;
     private RewardedAd _rewardedAd;
     private bool isAdClosed;
+    private bool adsInitialized = false;
 
     public bool IsAdClosed
     {
@@ -35,15 +36,22 @@ public class AdManager : MonoBehaviour
         DontDestroyOnLoad(gameObject);
     }
 
-    public void Start()
+    public void InitializeAds()
     {
+        if (adsInitialized)
+        {
+            Debug.Log("Ads already initialized.");
+            return;
+        }
+
         // Initialize the Google Mobile Ads SDK.
         MobileAds.Initialize((InitializationStatus initStatus) =>
         {
             // This callback is called once the MobileAds SDK is initialized.
-           // LoadBannerAd();
+            // LoadBannerAd();
             LoadInterstitialAd();
             LoadRewardedAd();
+            adsInitialized = true;
         });
     }
 

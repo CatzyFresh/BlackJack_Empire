@@ -2,13 +2,21 @@ using UnityEngine;
 
 public class BetManager : MonoBehaviour
 {
+   
     public int PlayerBalance { get; private set; } = 1000;
     public int CurrentBet { get; private set; } = 0;
+    
 
     public void InitializeBalance(int initialBalance)
     {
         PlayerBalance = initialBalance;
         Debug.Log($"Player balance initialized to: {PlayerBalance}");
+    }
+
+    public void SetBalanceFromPlayerData(int savedBalance)
+    {
+        PlayerBalance = savedBalance;
+        Debug.Log($"BetManager: Balance set to {PlayerBalance} from saved data.");
     }
 
     public void PlaceBet(int amount)

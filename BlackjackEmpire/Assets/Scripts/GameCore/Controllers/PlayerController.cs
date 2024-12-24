@@ -4,8 +4,12 @@ using UnityEngine;
 
 public class PlayerController : MonoBehaviour
 {
+
+    
     public List<CardData> Hand { get; private set; } = new List<CardData>();
     public int BetAmount { get; set; }
+
+    
 
     public void AddCardToHand(CardData card)
     {

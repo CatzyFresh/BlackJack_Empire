@@ -13,9 +13,6 @@ public class GuestLoginManager : MonoBehaviour
     public PlayerData CurrentPlayerData { get; private set; }
     public static GuestLoginManager Instance { get; private set; }
 
-    public GameObject loginScreen;
-    public GameObject mainMenuScreen;
-
     public static event Action OnPlayerDataUpdated; // Event for player data update
 
     private void Awake()
@@ -30,9 +27,14 @@ public class GuestLoginManager : MonoBehaviour
         DontDestroyOnLoad(gameObject); // Make this GameObject persistent
     }
 
+    public bool HasExistingPlayerData()
+    {
+        return File.Exists(FilePath);
+    }
+
     public void GuestLogin()
     {
-        if (File.Exists(FilePath))
+        if (HasExistingPlayerData())
         {
             Debug.Log("Existing profile found. Loading data...");
             LoadPlayerData();
@@ -46,8 +48,21 @@ public class GuestLoginManager : MonoBehaviour
         // Navigate to the main menu or display player information
         NotifyPlayerDataUpdated();
         Debug.Log($"Welcome, {CurrentPlayerData.PlayerName}! Chips: {CurrentPlayerData.Chips}");
-        loginScreen.SetActive(false);
-        mainMenuScreen.SetActive(true);
+    }
+
+    public void AutoLogin()
+    {
+        if (HasExistingPlayerData())
+        {
+            Debug.Log("Auto-logging in with existing profile...");
+            LoadPlayerData();
+        }
+        else
+        {
+            Debug.LogError("No existing player data found for auto-login.");
+        }
+
+        NotifyPlayerDataUpdated();
     }
 
     private void CreateNewGuestProfile()

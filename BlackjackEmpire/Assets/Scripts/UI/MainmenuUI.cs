@@ -12,16 +12,24 @@ public class MainmenuUI : MonoBehaviour
     [SerializeField] private TextMeshProUGUI gameIDText;
     [SerializeField] private TextMeshProUGUI playerNameText;
     [SerializeField] private GameObject profilePopup;
+    [SerializeField] private GameObject gameplayCanvas;
+    [SerializeField] private GameObject mainMenuCanvas;
+    [SerializeField] LevelSystemUI levelSystemUI;
 
 
     private void OnEnable()
     {
-        GuestLoginManager.OnPlayerDataUpdated += UpdatePlayerStatsUI;
+        GuestLoginManager.OnPlayerDataUpdated += UpdatePlayerStatsUI;       
     }
 
     private void OnDisable()
     {
         GuestLoginManager.OnPlayerDataUpdated -= UpdatePlayerStatsUI;
+    }
+
+    private void Start()
+    {
+        UpdatePlayerStatsUI();
     }
 
     public void UpdatePlayerStatsUI()
@@ -40,15 +48,38 @@ public class MainmenuUI : MonoBehaviour
         chipsAmountText.text = playerData.Chips.ToString();
         gameIDText.text = playerData.UUID;
         playerNameText.text = playerData.PlayerName;
+
+        Debug.Log($"Playerdats current level {playerData.CurrentLevel}");
     }
 
     public void OnUserProfileButtonClicked()
     {
         profilePopup.SetActive(true);
+        levelSystemUI.UpdateLevelInfoInUserProfilePopup();
     }
 
     public void OnUserProfileCloseButtonClicked()
     {
         profilePopup.SetActive(false);
+    }
+
+    public void OnPlayButtonClicked()
+    {
+        if (!GameManager.Instance.IsGameInitialized)
+        {
+            GameManager.Instance.InitializeGame();
+        } 
+        gameplayCanvas.SetActive(true);
+        mainMenuCanvas.SetActive(false);
+    }
+
+    public void OnInstantChipsButtonClicked()
+    {
+        AdManager.Instance.ShowRewardedAd();
+    }
+
+    public void OnExitButtonClicked()
+    {
+        Application.Quit();
     }
 }
